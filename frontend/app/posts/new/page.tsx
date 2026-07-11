@@ -109,25 +109,25 @@ export default function NewPostPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/posts"
-            className="p-2 rounded-lg hover:bg-muted"
+            className="p-2 hover:bg-muted"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <h2 className="font-semibold">New Post</h2>
           <div className="flex items-center gap-2 ml-4">
-            <div className={`h-2 w-2 rounded-full ${status === 'published' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+            <div className={`h-2 w-2 ${status === 'published' ? 'bg-green-600' : 'bg-muted-foreground'}`} />
             <span className="text-sm text-muted-foreground capitalize">{status}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm hover:bg-muted">
+          <button className="inline-flex items-center gap-2 px-3 py-1.5 border text-sm hover:bg-muted">
             <Eye className="h-4 w-4" />
             Preview
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
           >
             <Save className="h-4 w-4" />
             {isSaving ? 'Saving...' : 'Save'}
@@ -143,26 +143,26 @@ export default function NewPostPage() {
               placeholder="Post title"
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
-              className="w-full text-2xl font-bold border-none outline-none bg-transparent"
+              className="w-full text-2xl font-bold border-none outline-none bg-transparent font-[family-name:var(--font-playfair)]"
             />
           </div>
           <div className="flex items-center gap-1 p-2 border-b bg-muted/30">
-            <button onClick={bold} className="p-2 rounded hover:bg-muted" title="Bold">
+            <button onClick={bold} className="p-2 hover:bg-muted" title="Bold">
               <Bold className="h-4 w-4" />
             </button>
-            <button onClick={italic} className="p-2 rounded hover:bg-muted" title="Italic">
+            <button onClick={italic} className="p-2 hover:bg-muted" title="Italic">
               <Italic className="h-4 w-4" />
             </button>
-            <button onClick={list} className="p-2 rounded hover:bg-muted" title="List">
+            <button onClick={list} className="p-2 hover:bg-muted" title="List">
               <List className="h-4 w-4" />
             </button>
-            <button onClick={link} className="p-2 rounded hover:bg-muted" title="Link">
+            <button onClick={link} className="p-2 hover:bg-muted" title="Link">
               <Link2 className="h-4 w-4" />
             </button>
-            <button onClick={code} className="p-2 rounded hover:bg-muted" title="Code">
+            <button onClick={code} className="p-2 hover:bg-muted" title="Code">
               <Code className="h-4 w-4" />
             </button>
-            <button onClick={quote} className="p-2 rounded hover:bg-muted" title="Quote">
+            <button onClick={quote} className="p-2 hover:bg-muted" title="Quote">
               <Quote className="h-4 w-4" />
             </button>
             <input
@@ -173,7 +173,7 @@ export default function NewPostPage() {
               onChange={handleInlineImageUpload}
             />
             <button
-              className="p-2 rounded hover:bg-muted"
+              className="p-2 hover:bg-muted"
               title="Insert Image"
               onClick={() => inlineImageInputRef.current?.click()}
               disabled={isInsertingImage}
@@ -186,7 +186,7 @@ export default function NewPostPage() {
             </button>
             <div className="ml-auto flex items-center gap-1">
               <button
-                className="p-2 rounded hover:bg-muted"
+                className="p-2 hover:bg-muted"
                 title={isEditorMaximized ? 'Restore' : 'Maximize'}
                 onClick={() => setIsEditorMaximized(!isEditorMaximized)}
               >
@@ -196,7 +196,7 @@ export default function NewPostPage() {
           </div>
           <textarea
             ref={textareaRef}
-            className="flex-1 p-4 outline-none resize-none"
+            className="flex-1 p-4 outline-none resize-none font-[family-name:var(--font-newsreader)]"
             placeholder="Write your post content here..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -206,22 +206,22 @@ export default function NewPostPage() {
         {!isEditorMaximized && (
           <>
             {/* Preview Panel */}
-            <div className="flex-1 flex flex-col bg-white">
+            <div className="flex-1 flex flex-col bg-card">
               <div className="p-4 border-b flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
+                <span className="text-xs tracking-wider uppercase text-muted-foreground">
                   Live Preview
                 </span>
               </div>
               <div className="flex-1 p-6 overflow-auto">
                 <article className="prose max-w-none">
-                  <h1 className="text-3xl font-bold mb-4">
+                  <h1 className="text-3xl font-bold mb-4 font-[family-name:var(--font-playfair)]">
                     {title || 'Post Title'}
                   </h1>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                    <span className={`px-2 py-0.5 text-xs font-medium tracking-wider uppercase ${
                       status === 'published'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-yellow-100 text-yellow-700'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-muted text-muted-foreground'
                     }`}>
                       {status === 'published' ? 'Published' : 'Draft'}
                     </span>
@@ -235,11 +235,11 @@ export default function NewPostPage() {
             {/* Settings Panel */}
             <div className="w-72 border-l p-4 space-y-4 overflow-auto">
               <div>
-                <label className="block text-sm font-medium mb-2">Status</label>
+                <label className="block text-xs tracking-wider uppercase text-muted-foreground font-medium mb-2">Status</label>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setStatus(status === 'draft' ? 'published' : 'draft')}
-                    className="flex items-center gap-2 px-3 py-2 border rounded-lg text-sm w-full"
+                    className="flex items-center gap-2 px-3 py-2 border text-sm w-full"
                   >
                     {status === 'draft' ? (
                       <>
@@ -256,16 +256,16 @@ export default function NewPostPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Slug</label>
+                <label className="block text-xs tracking-wider uppercase text-muted-foreground font-medium mb-2">Slug</label>
                 <input
                   type="text"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  className="w-full border px-3 py-2 text-sm bg-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs tracking-wider uppercase text-muted-foreground font-medium mb-2">
                   Featured Image
                 </label>
                 <ImageUploader
@@ -283,13 +283,13 @@ export default function NewPostPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs tracking-wider uppercase text-muted-foreground font-medium mb-2">
                   Meta Description
                 </label>
                 <textarea
                   value={metaDescription}
                   onChange={(e) => setMetaDescription(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 h-20 resize-none text-sm"
+                  className="w-full border px-3 py-2 h-20 resize-none text-sm bg-transparent"
                   placeholder="Brief description for SEO..."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
@@ -297,14 +297,14 @@ export default function NewPostPage() {
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-xs tracking-wider uppercase text-muted-foreground font-medium mb-2">
                   Publish Date
                 </label>
                 <input
                   type="datetime-local"
                   value={publishedAt}
                   onChange={(e) => setPublishedAt(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  className="w-full border px-3 py-2 text-sm bg-transparent"
                 />
               </div>
             </div>

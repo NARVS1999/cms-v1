@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { api, Post, getMediaUrl } from '@/lib/api';
 
 export default function BlogPostPage() {
@@ -36,7 +37,7 @@ export default function BlogPostPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-muted-foreground">{error || 'Post not found'}</p>
-        <Link href="/" className="text-primary hover:underline">
+        <Link href="/" className="text-accent hover:underline">
           Back to home
         </Link>
       </div>
@@ -45,8 +46,8 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="max-w-3xl mx-auto px-6 py-4">
+      <header className="border-b-2 border-foreground">
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link
             href="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -54,14 +55,17 @@ export default function BlogPostPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to all posts
           </Link>
+          <ThemeToggle />
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-10">
         <article>
-          <h1 className="text-4xl font-bold leading-tight">{post.title}</h1>
+          <h1 className="text-4xl font-bold leading-tight font-[family-name:var(--font-playfair)]">
+            {post.title}
+          </h1>
 
-          <div className="flex items-center gap-3 mt-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 mt-4 text-xs tracking-wider uppercase text-muted-foreground">
             {post.published_at && (
               <time dateTime={post.published_at}>
                 {new Date(post.published_at).toLocaleDateString('en-US', {
@@ -73,14 +77,14 @@ export default function BlogPostPage() {
             )}
             {post.creator && (
               <>
-                <span>·</span>
-                <span>{post.creator.name}</span>
+                <span>&middot;</span>
+                <span>By {post.creator.name}</span>
               </>
             )}
           </div>
 
           {post.featured_image && (
-            <div className="mt-8 overflow-hidden rounded-lg">
+            <div className="mt-8 overflow-hidden">
               <img
                 src={getMediaUrl(post.featured_image.file_path)}
                 alt={post.featured_image.alt_text || post.title}
@@ -90,14 +94,14 @@ export default function BlogPostPage() {
           )}
 
           <div
-            className="mt-8 prose prose-lg max-w-none"
+            className="mt-8 prose prose-lg max-w-none font-[family-name:var(--font-newsreader)]"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         </article>
       </main>
 
       <footer className="border-t mt-20">
-        <div className="max-w-3xl mx-auto px-6 py-8 text-center text-sm text-muted-foreground">
+        <div className="max-w-3xl mx-auto px-6 py-8 text-center text-xs tracking-wider uppercase text-muted-foreground">
           Powered by CMS
         </div>
       </footer>

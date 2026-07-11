@@ -11,7 +11,7 @@ import {
   FileImage,
   Info,
 } from 'lucide-react';
-import { api, Media } from '@/lib/api';
+import { api, Media, getMediaUrl } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { AdminLayout } from '@/components/admin-layout';
 
@@ -69,8 +69,20 @@ export default function MediaPage() {
       await api.deleteMedia(token, id);
       setMedia(media.filter(m => m.id !== id));
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete file';
+      alert(message);
       console.error('Failed to delete file:', error);
     }
+  };
+
+  const handleDownload = (item: Media) => {
+    const url = getMediaUrl(item.file_path);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = item.file_name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   return (
@@ -86,7 +98,7 @@ export default function MediaPage() {
             className="bg-transparent border-none outline-none text-sm w-64"
           />
         </div>
-        <label className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 cursor-pointer">
+        <label className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 cursor-pointer">
           <Upload className="h-4 w-4" />
           {isUploading ? 'Uploading...' : 'Upload'}
           <input
@@ -100,10 +112,10 @@ export default function MediaPage() {
       </header>
       <main className="flex-1 p-6 overflow-auto">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold">Media Library</h2>
+          <h2 className="text-2xl font-bold font-[family-name:var(--font-playfair)]">Media Library</h2>
           <p className="text-muted-foreground">{media.length} files</p>
           {uploadError && (
-            <div className="mt-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+            <div className="mt-2 p-3 bg-destructive/10 text-destructive text-sm">
               {uploadError}
             </div>
           )}
@@ -123,24 +135,35 @@ export default function MediaPage() {
               return (
                 <div
                   key={item.id}
-                  className="break-inside-avoid rounded-xl border bg-card overflow-hidden hover:shadow-md transition-shadow group"
+                  className="break-inside-avoid border bg-card overflow-hidden hover:border-accent/50 transition-colors group"
                 >
                   <div
-                    className={`${height} bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative`}
+                    className={`${height} bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden`}
                   >
-                    <Icon className="h-12 w-12 text-muted-foreground/50" />
+                    {item.mime_type.startsWith('image/') ? (
+                      <img
+                        src={getMediaUrl(item.file_path)}
+                        alt={item.alt_text || item.file_name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Icon className="h-12 w-12 text-muted-foreground/50" />
+                    )}
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       {user?.role === 'admin' && (
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="p-1.5 bg-white/90 rounded-lg hover:bg-white text-destructive"
+                          className="p-1.5 bg-background/90 hover:bg-background text-destructive"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </div>
                     <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-1.5 bg-white/90 rounded-lg hover:bg-white">
+                      <button
+                        onClick={() => handleDownload(item)}
+                        className="p-1.5 bg-background/90 hover:bg-background"
+                      >
                         <Download className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -153,7 +176,7 @@ export default function MediaPage() {
                       <p className="text-xs text-muted-foreground">
                         {formatSize(item.size)}
                       </p>
-                      <button className="p-1 rounded hover:bg-muted">
+                      <button className="p-1 hover:bg-muted">
                         <Info className="h-3 w-3 text-muted-foreground" />
                       </button>
                     </div>

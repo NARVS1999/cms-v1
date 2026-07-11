@@ -58,7 +58,7 @@ export default function PostsPage() {
         </div>
         <Link
           href="/posts/new"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" />
           New Post
@@ -74,8 +74,8 @@ export default function PostsPage() {
             {/* Draft Column */}
             <div className="w-80 flex-shrink-0">
               <div className="flex items-center gap-2 mb-4">
-                <div className="h-3 w-3 rounded-full bg-yellow-500" />
-                <h3 className="font-semibold">Drafts</h3>
+                <div className="h-3 w-3 bg-muted-foreground" />
+                <h3 className="font-semibold text-sm tracking-wider uppercase">Drafts</h3>
                 <span className="text-sm text-muted-foreground">
                   ({draftPosts.length})
                 </span>
@@ -84,21 +84,21 @@ export default function PostsPage() {
                 {draftPosts.map((post) => (
                   <div
                     key={post.id}
-                    className="rounded-xl border bg-card p-4 hover:shadow-md transition-shadow"
+                    className="border bg-card p-4 hover:border-accent/50 transition-colors"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
                       <div className="flex items-center gap-1">
                         <Link
                           href={`/posts/${post.id}/edit`}
-                          className="p-1 rounded hover:bg-muted"
+                          className="p-1 hover:bg-muted"
                         >
                           <Edit className="h-3.5 w-3.5" />
                         </Link>
                         {user?.role === 'admin' && (
                           <button
                             onClick={() => handleDelete(post.id)}
-                            className="p-1 rounded hover:bg-muted text-destructive"
+                            className="p-1 hover:bg-muted text-destructive"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -116,7 +116,7 @@ export default function PostsPage() {
                   </div>
                 ))}
                 {draftPosts.length === 0 && (
-                  <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground text-sm">
+                  <div className="border border-dashed p-8 text-center text-muted-foreground text-sm">
                     No draft posts
                   </div>
                 )}
@@ -126,8 +126,8 @@ export default function PostsPage() {
             {/* Published Column */}
             <div className="w-80 flex-shrink-0">
               <div className="flex items-center gap-2 mb-4">
-                <div className="h-3 w-3 rounded-full bg-green-500" />
-                <h3 className="font-semibold">Published</h3>
+                <div className="h-3 w-3 bg-green-600" />
+                <h3 className="font-semibold text-sm tracking-wider uppercase">Published</h3>
                 <span className="text-sm text-muted-foreground">
                   ({publishedPosts.length})
                 </span>
@@ -136,21 +136,21 @@ export default function PostsPage() {
                 {publishedPosts.map((post) => (
                   <div
                     key={post.id}
-                    className="rounded-xl border bg-card p-4 hover:shadow-md transition-shadow"
+                    className="border bg-card p-4 hover:border-accent/50 transition-colors"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
                       <div className="flex items-center gap-1">
                         <Link
                           href={`/posts/${post.id}/edit`}
-                          className="p-1 rounded hover:bg-muted"
+                          className="p-1 hover:bg-muted"
                         >
                           <Edit className="h-3.5 w-3.5" />
                         </Link>
                         {user?.role === 'admin' && (
                           <button
                             onClick={() => handleDelete(post.id)}
-                            className="p-1 rounded hover:bg-muted text-destructive"
+                            className="p-1 hover:bg-muted text-destructive"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -170,7 +170,7 @@ export default function PostsPage() {
                   </div>
                 ))}
                 {publishedPosts.length === 0 && (
-                  <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground text-sm">
+                  <div className="border border-dashed p-8 text-center text-muted-foreground text-sm">
                     No published posts
                   </div>
                 )}
@@ -180,11 +180,11 @@ export default function PostsPage() {
             {/* Empty Column Placeholder */}
             <div className="w-80 flex-shrink-0">
               <div className="flex items-center gap-2 mb-4">
-                <div className="h-3 w-3 rounded-full bg-muted-foreground" />
-                <h3 className="font-semibold text-muted-foreground">Archived</h3>
+                <div className="h-3 w-3 bg-muted-foreground/30" />
+                <h3 className="font-semibold text-sm tracking-wider uppercase text-muted-foreground">Archived</h3>
                 <span className="text-sm text-muted-foreground">(0)</span>
               </div>
-              <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground text-sm">
+              <div className="border border-dashed p-8 text-center text-muted-foreground text-sm">
                 Drag posts here to archive
               </div>
             </div>
