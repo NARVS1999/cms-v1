@@ -24,6 +24,7 @@ import { api, CreatePostData, Media, getMediaUrl } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { AdminLayout } from '@/components/admin-layout';
 import { ImageUploader } from '@/components/image-uploader';
+import { useEditorActions } from '@/hooks/use-editor-actions';
 
 export default function NewPostPage() {
   const { token } = useAuth();
@@ -39,7 +40,15 @@ export default function NewPostPage() {
   const [featuredImagePath, setFeaturedImagePath] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isInsertingImage, setIsInsertingImage] = useState(false);
+  const [isEditorMaximized, setIsEditorMaximized] = useState(false);
   const inlineImageInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { bold, italic, code, quote, link, list } = useEditorActions({
+    content,
+    setContent,
+    textareaRef,
+  });
 
   const handleSave = async () => {
     if (!token) return;
@@ -138,22 +147,24 @@ export default function NewPostPage() {
             />
           </div>
           <div className="flex items-center gap-1 p-2 border-b bg-muted/30">
-            {[
-              { icon: Bold, label: 'Bold' },
-              { icon: Italic, label: 'Italic' },
-              { icon: List, label: 'List' },
-              { icon: Link2, label: 'Link' },
-              { icon: Code, label: 'Code' },
-              { icon: Quote, label: 'Quote' },
-            ].map((tool) => (
-              <button
-                key={tool.label}
-                className="p-2 rounded hover:bg-muted"
-                title={tool.label}
-              >
-                <tool.icon className="h-4 w-4" />
-              </button>
-            ))}
+            <button onClick={bold} className="p-2 rounded hover:bg-muted" title="Bold">
+              <Bold className="h-4 w-4" />
+            </button>
+            <button onClick={italic} className="p-2 rounded hover:bg-muted" title="Italic">
+              <Italic className="h-4 w-4" />
+            </button>
+            <button onClick={list} className="p-2 rounded hover:bg-muted" title="List">
+              <List className="h-4 w-4" />
+            </button>
+            <button onClick={link} className="p-2 rounded hover:bg-muted" title="Link">
+              <Link2 className="h-4 w-4" />
+            </button>
+            <button onClick={code} className="p-2 rounded hover:bg-muted" title="Code">
+              <Code className="h-4 w-4" />
+            </button>
+            <button onClick={quote} className="p-2 rounded hover:bg-muted" title="Quote">
+              <Quote className="h-4 w-4" />
+            </button>
             <input
               ref={inlineImageInputRef}
               type="file"
@@ -174,12 +185,17 @@ export default function NewPostPage() {
               )}
             </button>
             <div className="ml-auto flex items-center gap-1">
-              <button className="p-2 rounded hover:bg-muted">
-                <Maximize2 className="h-4 w-4" />
+              <button
+                className="p-2 rounded hover:bg-muted"
+                title={isEditorMaximized ? 'Restore' : 'Maximize'}
+                onClick={() => setIsEditorMaximized(!isEditorMaximized)}
+              >
+                {isEditorMaximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </button>
             </div>
           </div>
           <textarea
+            ref={textareaRef}
             className="flex-1 p-4 outline-none resize-none"
             placeholder="Write your post content here..."
             value={content}
@@ -187,112 +203,113 @@ export default function NewPostPage() {
           />
         </div>
 
-        {/* Preview Panel */}
-        <div className="flex-1 flex flex-col bg-white">
-          <div className="p-4 border-b flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Live Preview
-            </span>
-            <button className="p-1 rounded hover:bg-muted">
-              <Minimize2 className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="flex-1 p-6 overflow-auto">
-            <article className="prose max-w-none">
-              <h1 className="text-3xl font-bold mb-4">
-                {title || 'Post Title'}
-              </h1>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                  status === 'published'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {status === 'published' ? 'Published' : 'Draft'}
+        {!isEditorMaximized && (
+          <>
+            {/* Preview Panel */}
+            <div className="flex-1 flex flex-col bg-white">
+              <div className="p-4 border-b flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Live Preview
                 </span>
-                <span>Updated just now</span>
               </div>
-              <div dangerouslySetInnerHTML={{ __html: content || '<p>Start writing...</p>' }} />
-            </article>
-          </div>
-        </div>
-
-        {/* Settings Panel */}
-        <div className="w-72 border-l p-4 space-y-4 overflow-auto">
-          <div>
-            <label className="block text-sm font-medium mb-2">Status</label>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setStatus(status === 'draft' ? 'published' : 'draft')}
-                className="flex items-center gap-2 px-3 py-2 border rounded-lg text-sm w-full"
-              >
-                {status === 'draft' ? (
-                  <>
-                    <ToggleLeft className="h-4 w-4" />
-                    Draft
-                  </>
-                ) : (
-                  <>
-                    <ToggleRight className="h-4 w-4" />
-                    Published
-                  </>
-                )}
-              </button>
+              <div className="flex-1 p-6 overflow-auto">
+                <article className="prose max-w-none">
+                  <h1 className="text-3xl font-bold mb-4">
+                    {title || 'Post Title'}
+                  </h1>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      status === 'published'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {status === 'published' ? 'Published' : 'Draft'}
+                    </span>
+                    <span>Updated just now</span>
+                  </div>
+                  <div dangerouslySetInnerHTML={{ __html: (content || '<p>Start writing...</p>').replace(/\n/g, '<br />') }} />
+                </article>
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Slug</label>
-            <input
-              type="text"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Featured Image
-            </label>
-            <ImageUploader
-              token={token || ''}
-              currentImageId={featuredImageId}
-              currentImagePath={featuredImagePath}
-              onImageSelected={(media) => {
-                setFeaturedImageId(media.id);
-                setFeaturedImagePath(media.file_path);
-              }}
-              onImageRemoved={() => {
-                setFeaturedImageId(null);
-                setFeaturedImagePath(null);
-              }}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Meta Description
-            </label>
-            <textarea
-              value={metaDescription}
-              onChange={(e) => setMetaDescription(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 h-20 resize-none text-sm"
-              placeholder="Brief description for SEO..."
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {metaDescription.length}/160 characters
-            </p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Publish Date
-            </label>
-            <input
-              type="datetime-local"
-              value={publishedAt}
-              onChange={(e) => setPublishedAt(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm"
-            />
-          </div>
-        </div>
+
+            {/* Settings Panel */}
+            <div className="w-72 border-l p-4 space-y-4 overflow-auto">
+              <div>
+                <label className="block text-sm font-medium mb-2">Status</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setStatus(status === 'draft' ? 'published' : 'draft')}
+                    className="flex items-center gap-2 px-3 py-2 border rounded-lg text-sm w-full"
+                  >
+                    {status === 'draft' ? (
+                      <>
+                        <ToggleLeft className="h-4 w-4" />
+                        Draft
+                      </>
+                    ) : (
+                      <>
+                        <ToggleRight className="h-4 w-4" />
+                        Published
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Slug</label>
+                <input
+                  type="text"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Featured Image
+                </label>
+                <ImageUploader
+                  token={token || ''}
+                  currentImageId={featuredImageId}
+                  currentImagePath={featuredImagePath}
+                  onImageSelected={(media) => {
+                    setFeaturedImageId(media.id);
+                    setFeaturedImagePath(media.file_path);
+                  }}
+                  onImageRemoved={() => {
+                    setFeaturedImageId(null);
+                    setFeaturedImagePath(null);
+                  }}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Meta Description
+                </label>
+                <textarea
+                  value={metaDescription}
+                  onChange={(e) => setMetaDescription(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 h-20 resize-none text-sm"
+                  placeholder="Brief description for SEO..."
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  {metaDescription.length}/160 characters
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Publish Date
+                </label>
+                <input
+                  type="datetime-local"
+                  value={publishedAt}
+                  onChange={(e) => setPublishedAt(e.target.value)}
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          </>
+        )}
       </main>
     </AdminLayout>
   );
