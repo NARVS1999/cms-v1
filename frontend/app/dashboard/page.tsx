@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import {
   BarChart3,
@@ -16,19 +16,28 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentPosts, setRecentPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (token) {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       Promise.all([
-        api.getDashboardStats(token),
-        api.getRecentActivity(token),
+        api.getDashboardStats(token, controller.signal),
+        api.getRecentActivity(token, controller.signal),
       ])
         .then(([statsData, postsData]) => {
           setStats(statsData);
           setRecentPosts(postsData);
         })
-        .catch(console.error)
+        .catch((err) => {
+          if (err.name !== 'AbortError') console.error(err);
+        })
         .finally(() => setIsLoading(false));
+
+      return () => controller.abort();
     }
   }, [token]);
 
@@ -55,7 +64,6 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-12 gap-4">
-            {/* Large stat card */}
             <div className="col-span-12 md:col-span-8 border bg-card p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-10 w-10 bg-accent/10 flex items-center justify-center">
@@ -80,7 +88,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Small stat card */}
             <div className="col-span-12 md:col-span-4 border bg-card p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-10 w-10 bg-accent/10 flex items-center justify-center">
@@ -94,7 +101,6 @@ export default function DashboardPage() {
               <p className="text-sm text-muted-foreground">files uploaded</p>
             </div>
 
-            {/* Activity feed */}
             <div className="col-span-12 lg:col-span-8 border bg-card">
               <div className="p-4 border-b flex items-center justify-between">
                 <h3 className="font-semibold font-[family-name:var(--font-playfair)]">Recent Posts</h3>
@@ -125,7 +131,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Quick stats */}
             <div className="col-span-12 lg:col-span-4 border bg-card p-4">
               <h3 className="font-semibold mb-4 font-[family-name:var(--font-playfair)]">Quick Stats</h3>
               <div className="space-y-3">

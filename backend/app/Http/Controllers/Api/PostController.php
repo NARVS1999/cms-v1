@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,38 +11,36 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of posts
-     */
+    private const ALLOWED_SORT_COLUMNS = ['created_at', 'updated_at', 'title', 'published_at'];
+
+    private const MAX_PER_PAGE = 100;
+
     public function index(Request $request): JsonResponse
     {
         $query = Post::with(['creator', 'updater', 'featuredImage']);
 
-        // Filter by status
         if ($request->has('status')) {
             $query->where('status', $request->status);
         }
 
-        // Search by title
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('title', 'like', "%{$search}%");
         }
 
-        // Sort
         $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        if (!in_array($sortBy, self::ALLOWED_SORT_COLUMNS)) {
+            $sortBy = 'created_at';
+        }
+        $sortOrder = $request->get('sort_order', 'desc') === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortBy, $sortOrder);
 
-        // Paginate
-        $posts = $query->paginate($request->get('per_page', 15));
+        $perPage = min((int) $request->get('per_page', 15), self::MAX_PER_PAGE);
+        $posts = $query->paginate($perPage);
 
-        return response()->json($posts);
+        return PostResource::collection($posts)->response();
     }
 
-    /**
-     * Store a newly created post
-     */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -54,11 +53,8 @@ class PostController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        // Auto-generate slug if not provided
         if (empty($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['title']);
-            
-            // Ensure slug is unique
             $originalSlug = $validated['slug'];
             $counter = 1;
             while (Post::where('slug', $validated['slug'])->exists()) {
@@ -67,7 +63,6 @@ class PostController extends Controller
             }
         }
 
-        // Set status and published_at
         if (!isset($validated['status'])) {
             $validated['status'] = 'draft';
         }
@@ -76,34 +71,24 @@ class PostController extends Controller
             $validated['published_at'] = now();
         }
 
-        // Set creator and updater
         $validated['created_by'] = $request->user()->id;
         $validated['updated_by'] = $request->user()->id;
 
         $post = Post::create($validated);
         $post->load(['creator', 'updater', 'featuredImage']);
 
-        return response()->json($post, 201);
+        return response()->json(new PostResource($post), 201);
     }
 
-    /**
-     * Display the specified post
-     */
     public function show(Post $post): JsonResponse
     {
         $post->load(['creator', 'updater', 'featuredImage']);
 
-        return response()->json($post);
+        return response()->json(new PostResource($post));
     }
 
-    /**
-     * Update the specified post
-     */
     public function update(Request $request, Post $post): JsonResponse
     {
-        // Check if user can delete (only admins can delete, but editors can update)
-        // For now, allow both admins and editors to update
-
         $validated = $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'slug' => 'sometimes|string|max:255|unique:posts,slug,' . $post->id,
@@ -114,11 +99,8 @@ class PostController extends Controller
             'published_at' => 'nullable|date',
         ]);
 
-        // Auto-generate slug if title changed but slug not provided
         if (isset($validated['title']) && !isset($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['title']);
-            
-            // Ensure slug is unique
             $originalSlug = $validated['slug'];
             $counter = 1;
             while (Post::where('slug', $validated['slug'])->where('id', '!=', $post->id)->exists()) {
@@ -127,7 +109,6 @@ class PostController extends Controller
             }
         }
 
-        // Handle status change
         if (isset($validated['status'])) {
             if ($validated['status'] === 'published' && empty($validated['published_at'])) {
                 $validated['published_at'] = $post->published_at ?? now();
@@ -136,21 +117,16 @@ class PostController extends Controller
             }
         }
 
-        // Set updater
         $validated['updated_by'] = $request->user()->id;
 
         $post->update($validated);
         $post->load(['creator', 'updater', 'featuredImage']);
 
-        return response()->json($post);
+        return response()->json(new PostResource($post));
     }
 
-    /**
-     * Remove the specified post
-     */
     public function destroy(Request $request, Post $post): JsonResponse
     {
-        // Only admins can delete posts
         if (!$request->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }

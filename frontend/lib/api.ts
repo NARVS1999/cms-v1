@@ -2,6 +2,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 interface RequestOptions extends RequestInit {
   token?: string;
+  signal?: AbortSignal;
 }
 
 class ApiClient {
@@ -12,8 +13,8 @@ class ApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { token, ...fetchOptions } = options;
-    
+    const { token, signal, ...fetchOptions } = options;
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -27,6 +28,7 @@ class ApiClient {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...fetchOptions,
       headers,
+      signal,
     });
 
     if (!response.ok) {
@@ -46,18 +48,18 @@ class ApiClient {
   }
 
   // Public blog (no auth)
-  async getPublicPosts(params?: { search?: string; page?: number; per_page?: number }) {
+  async getPublicPosts(params?: { search?: string; page?: number; per_page?: number }, signal?: AbortSignal) {
     const searchParams = new URLSearchParams();
     if (params?.search) searchParams.set('search', params.search);
     if (params?.page) searchParams.set('page', params.page.toString());
     if (params?.per_page) searchParams.set('per_page', params.per_page.toString());
 
     const queryString = searchParams.toString();
-    return this.request<PaginatedResponse<Post>>(`/public/posts${queryString ? `?${queryString}` : ''}`);
+    return this.request<PaginatedResponse<Post>>(`/public/posts${queryString ? `?${queryString}` : ''}`, { signal });
   }
 
-  async getPublicPost(slug: string) {
-    return this.request<Post>(`/public/posts/${slug}`);
+  async getPublicPost(slug: string, signal?: AbortSignal) {
+    return this.request<Post>(`/public/posts/${slug}`, { signal });
   }
 
   async logout(token: string) {
@@ -72,28 +74,28 @@ class ApiClient {
   }
 
   // Dashboard
-  async getDashboardStats(token: string) {
-    return this.request<DashboardStats>('/dashboard/stats', { token });
+  async getDashboardStats(token: string, signal?: AbortSignal) {
+    return this.request<DashboardStats>('/dashboard/stats', { token, signal });
   }
 
-  async getRecentActivity(token: string) {
-    return this.request<Post[]>('/dashboard/activity', { token });
+  async getRecentActivity(token: string, signal?: AbortSignal) {
+    return this.request<Post[]>('/dashboard/activity', { token, signal });
   }
 
   // Posts
-  async getPosts(token: string, params?: PostFilters) {
+  async getPosts(token: string, params?: PostFilters, signal?: AbortSignal) {
     const searchParams = new URLSearchParams();
     if (params?.status) searchParams.set('status', params.status);
     if (params?.search) searchParams.set('search', params.search);
     if (params?.page) searchParams.set('page', params.page.toString());
     if (params?.per_page) searchParams.set('per_page', params.per_page.toString());
-    
+
     const queryString = searchParams.toString();
-    return this.request<PaginatedResponse<Post>>(`/posts${queryString ? `?${queryString}` : ''}`, { token });
+    return this.request<PaginatedResponse<Post>>(`/posts${queryString ? `?${queryString}` : ''}`, { token, signal });
   }
 
-  async getPost(token: string, id: number) {
-    return this.request<Post>(`/posts/${id}`, { token });
+  async getPost(token: string, id: number, signal?: AbortSignal) {
+    return this.request<Post>(`/posts/${id}`, { token, signal });
   }
 
   async createPost(token: string, data: CreatePostData) {
@@ -120,15 +122,15 @@ class ApiClient {
   }
 
   // Media
-  async getMedia(token: string, params?: MediaFilters) {
+  async getMedia(token: string, params?: MediaFilters, signal?: AbortSignal) {
     const searchParams = new URLSearchParams();
     if (params?.search) searchParams.set('search', params.search);
     if (params?.mime_type) searchParams.set('mime_type', params.mime_type);
     if (params?.page) searchParams.set('page', params.page.toString());
     if (params?.per_page) searchParams.set('per_page', params.per_page.toString());
-    
+
     const queryString = searchParams.toString();
-    return this.request<PaginatedResponse<Media>>(`/media${queryString ? `?${queryString}` : ''}`, { token });
+    return this.request<PaginatedResponse<Media>>(`/media${queryString ? `?${queryString}` : ''}`, { token, signal });
   }
 
   async uploadMedia(token: string, file: File, altText?: string): Promise<Media> {
@@ -136,21 +138,29 @@ class ApiClient {
     formData.append('file', file);
     if (altText) formData.append('alt_text', altText);
 
-    const response = await fetch(`${this.baseUrl}/media`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      },
-      body: formData,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Upload failed' }));
-      throw new Error(error.message || 'Upload failed');
+    try {
+      const response = await fetch(`${this.baseUrl}/media`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        body: formData,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Upload failed' }));
+        throw new Error(error.message || 'Upload failed');
+      }
+
+      return response.json();
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    return response.json();
   }
 
   async deleteMedia(token: string, id: number) {
@@ -181,7 +191,8 @@ export interface Post {
   id: number;
   title: string;
   slug: string;
-  content: string;
+  content?: string;
+  preview?: string;
   status: 'draft' | 'published';
   featured_image_id: number | null;
   meta_description: string | null;
@@ -202,9 +213,7 @@ export interface Media {
   mime_type: string;
   size: number;
   alt_text: string | null;
-  uploaded_by: number;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
   uploader?: User;
 }
 
@@ -241,8 +250,19 @@ export interface MediaFilters {
 
 export interface PaginatedResponse<T> {
   data: T[];
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+    path: string;
+  };
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
 }

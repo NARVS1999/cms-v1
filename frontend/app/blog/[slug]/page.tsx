@@ -89,13 +89,14 @@ export default function BlogPostPage() {
                 src={getMediaUrl(post.featured_image.file_path)}
                 alt={post.featured_image.alt_text || post.title}
                 className="w-full h-auto max-h-[500px] object-cover"
+                loading="lazy"
               />
             </div>
           )}
 
           <div
             className="mt-8 prose prose-lg max-w-none font-[family-name:var(--font-newsreader)]"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: post.content || '' }}
           />
         </article>
       </main>

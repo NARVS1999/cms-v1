@@ -44,6 +44,8 @@ export default function PostEditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isInsertingImage, setIsInsertingImage] = useState(false);
   const [isEditorMaximized, setIsEditorMaximized] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const inlineImageInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -55,11 +57,16 @@ export default function PostEditorPage() {
 
   useEffect(() => {
     if (postId && token) {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       setIsLoading(true);
-      api.getPost(token, postId)
+      setFetchError(null);
+      api.getPost(token, postId, controller.signal)
         .then((post) => {
           setTitle(post.title);
-          setContent(post.content);
+          setContent(post.content || '');
           setSlug(post.slug);
           setStatus(post.status);
           setMetaDescription(post.meta_description || '');
@@ -67,14 +74,21 @@ export default function PostEditorPage() {
           setFeaturedImageId(post.featured_image_id);
           setFeaturedImagePath(post.featured_image?.file_path || null);
         })
-        .catch(console.error)
+        .catch((err) => {
+          if (err.name !== 'AbortError') {
+            setFetchError(err.message || 'Failed to load post');
+            console.error(err);
+          }
+        })
         .finally(() => setIsLoading(false));
+
+      return () => controller.abort();
     }
   }, [postId, token]);
 
   const handleSave = async () => {
     if (!token) return;
-    
+
     setIsSaving(true);
     try {
       const data: CreatePostData = {
@@ -131,6 +145,32 @@ export default function PostEditorPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <AdminLayout>
+        <div className="flex flex-col items-center justify-center py-12 gap-4">
+          <p className="text-destructive">{fetchError}</p>
+          <Link
+            href="/posts"
+            className="text-sm text-accent hover:underline"
+          >
+            Back to posts
+          </Link>
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <header className="h-14 border-b flex items-center justify-between px-6">
@@ -163,7 +203,6 @@ export default function PostEditorPage() {
         </div>
       </header>
       <main className="flex-1 flex">
-        {/* Editor Panel */}
         <div className="flex-1 flex flex-col border-r">
           <div className="p-4 border-b">
             <input
@@ -233,7 +272,6 @@ export default function PostEditorPage() {
 
         {!isEditorMaximized && (
           <>
-            {/* Preview Panel */}
             <div className="flex-1 flex flex-col bg-card">
               <div className="p-4 border-b flex items-center justify-between">
                 <span className="text-xs tracking-wider uppercase text-muted-foreground">
@@ -260,7 +298,6 @@ export default function PostEditorPage() {
               </div>
             </div>
 
-            {/* Settings Panel */}
             <div className="w-72 border-l p-4 space-y-4 overflow-auto">
               <div>
                 <label className="block text-xs tracking-wider uppercase text-muted-foreground font-medium mb-2">Status</label>

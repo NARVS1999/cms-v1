@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\MediaResource;
 use App\Models\Media;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,38 +11,36 @@ use Illuminate\Support\Facades\Storage;
 
 class MediaController extends Controller
 {
-    /**
-     * Display a listing of media
-     */
+    private const ALLOWED_SORT_COLUMNS = ['created_at', 'file_name', 'size'];
+
+    private const MAX_PER_PAGE = 100;
+
     public function index(Request $request): JsonResponse
     {
         $query = Media::with('uploader');
 
-        // Search by file name
         if ($request->has('search')) {
             $search = $request->search;
             $query->where('file_name', 'like', "%{$search}%");
         }
 
-        // Filter by mime type
         if ($request->has('mime_type')) {
             $query->where('mime_type', 'like', "%{$request->mime_type}%");
         }
 
-        // Sort
         $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        if (!in_array($sortBy, self::ALLOWED_SORT_COLUMNS)) {
+            $sortBy = 'created_at';
+        }
+        $sortOrder = $request->get('sort_order', 'desc') === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortBy, $sortOrder);
 
-        // Paginate
-        $media = $query->paginate($request->get('per_page', 15));
+        $perPage = min((int) $request->get('per_page', 15), self::MAX_PER_PAGE);
+        $media = $query->paginate($perPage);
 
-        return response()->json($media);
+        return MediaResource::collection($media)->response();
     }
 
-    /**
-     * Store a newly uploaded media
-     */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
@@ -50,12 +49,11 @@ class MediaController extends Controller
         ]);
 
         $file = $request->file('file');
-        
+
         if (!$file || !$file->isValid()) {
             return response()->json(['message' => 'File upload failed'], 422);
         }
-        
-        // Generate unique filename
+
         $filename = time() . '_' . $file->getClientOriginalName();
         $filepath = $file->storeAs('uploads', $filename, 'public');
 
@@ -70,22 +68,16 @@ class MediaController extends Controller
 
         $media->load('uploader');
 
-        return response()->json($media, 201);
+        return response()->json(new MediaResource($media), 201);
     }
 
-    /**
-     * Display the specified media
-     */
     public function show(Media $media): JsonResponse
     {
         $media->load('uploader');
 
-        return response()->json($media);
+        return response()->json(new MediaResource($media));
     }
 
-    /**
-     * Update the specified media
-     */
     public function update(Request $request, Media $media): JsonResponse
     {
         $validated = $request->validate([
@@ -95,20 +87,15 @@ class MediaController extends Controller
         $media->update($validated);
         $media->load('uploader');
 
-        return response()->json($media);
+        return response()->json(new MediaResource($media));
     }
 
-    /**
-     * Remove the specified media
-     */
     public function destroy(Request $request, Media $media): JsonResponse
     {
-        // Only admins can delete media
         if (!$request->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Delete file from storage
         $filePath = str_replace('/storage/', '', $media->file_path);
         if (Storage::disk('public')->exists($filePath)) {
             Storage::disk('public')->delete($filePath);

@@ -4,18 +4,24 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { api, Post, getMediaUrl } from '@/lib/api';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
   useEffect(() => {
-    api.getPublicPosts({ per_page: 20 })
-      .then((res) => setPosts(res.data))
+    api.getPublicPosts({ per_page: 10, page })
+      .then((res) => {
+        setPosts(res.data);
+        setLastPage(res.meta.last_page);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [page]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -46,48 +52,75 @@ export default function Home() {
         ) : posts.length === 0 ? (
           <p className="text-center text-muted-foreground py-20">No posts yet.</p>
         ) : (
-          <div>
-            {posts.map((post, index) => (
-              <article key={post.id} className="group">
-                <Link href={`/blog/${post.slug}`} className="block py-8">
-                  {post.featured_image && (
-                    <div className="mb-4 overflow-hidden">
-                      <img
-                        src={getMediaUrl(post.featured_image.file_path)}
-                        alt={post.featured_image.alt_text || post.title}
-                        className="w-full h-64 object-cover transition-transform group-hover:scale-[1.02]"
-                      />
+          <>
+            <div>
+              {posts.map((post, index) => (
+                <article key={post.id} className="group">
+                  <Link href={`/blog/${post.slug}`} className="block py-8">
+                    {post.featured_image && (
+                      <div className="mb-4 overflow-hidden">
+                        <img
+                          src={getMediaUrl(post.featured_image.file_path)}
+                          alt={post.featured_image.alt_text || post.title}
+                          className="w-full h-64 object-cover transition-transform group-hover:scale-[1.02]"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <h2 className="text-2xl font-bold group-hover:text-accent transition-colors font-[family-name:var(--font-playfair)]">
+                      {post.title}
+                    </h2>
+                    <div className="flex items-center gap-3 mt-2 text-xs tracking-wider uppercase text-muted-foreground">
+                      {post.published_at && (
+                        <time dateTime={post.published_at}>
+                          {new Date(post.published_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </time>
+                      )}
+                      {post.creator && (
+                        <>
+                          <span>&middot;</span>
+                          <span>By {post.creator.name}</span>
+                        </>
+                      )}
                     </div>
-                  )}
-                  <h2 className="text-2xl font-bold group-hover:text-accent transition-colors font-[family-name:var(--font-playfair)]">
-                    {post.title}
-                  </h2>
-                  <div className="flex items-center gap-3 mt-2 text-xs tracking-wider uppercase text-muted-foreground">
-                    {post.published_at && (
-                      <time dateTime={post.published_at}>
-                        {new Date(post.published_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </time>
-                    )}
-                    {post.creator && (
-                      <>
-                        <span>&middot;</span>
-                        <span>By {post.creator.name}</span>
-                      </>
-                    )}
-                  </div>
-                  <p className="mt-3 text-muted-foreground line-clamp-2 font-[family-name:var(--font-newsreader)]">
-                    {post.content.replace(/<[^>]+>/g, '').slice(0, 180)}
-                    {post.content.length > 180 && '...'}
-                  </p>
-                </Link>
-                {index < posts.length - 1 && <div className="border-t" />}
-              </article>
-            ))}
-          </div>
+                    <p className="mt-3 text-muted-foreground line-clamp-2 font-[family-name:var(--font-newsreader)]">
+                      {post.preview || post.content?.replace(/<[^>]+>/g, '').slice(0, 180) || ''}
+                      {(post.preview?.length ?? 0) >= 180 ? '...' : ''}
+                    </p>
+                  </Link>
+                  {index < posts.length - 1 && <div className="border-t" />}
+                </article>
+              ))}
+            </div>
+
+            {lastPage > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-12">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page <= 1}
+                  className="inline-flex items-center gap-1 px-4 py-2 border text-sm hover:bg-muted disabled:opacity-50 transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </button>
+                <span className="text-sm text-muted-foreground">
+                  Page {page} of {lastPage}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(lastPage, p + 1))}
+                  disabled={page >= lastPage}
+                  className="inline-flex items-center gap-1 px-4 py-2 border text-sm hover:bg-muted disabled:opacity-50 transition-colors"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
 
