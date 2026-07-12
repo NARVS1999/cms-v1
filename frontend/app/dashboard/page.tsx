@@ -46,7 +46,7 @@ export default function DashboardPage() {
       <div className="flex-1 p-6 bg-muted/30">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold font-[family-name:var(--font-playfair)]">Dashboard</h2>
+            <h2 className="text-2xl font-bold font-[family-name:var(--font-shippori)]">Dashboard</h2>
             <p className="text-muted-foreground">Welcome back, {user?.name}</p>
           </div>
           <Link
@@ -103,7 +103,7 @@ export default function DashboardPage() {
 
             <div className="col-span-12 lg:col-span-8 border bg-card">
               <div className="p-4 border-b flex items-center justify-between">
-                <h3 className="font-semibold font-[family-name:var(--font-playfair)]">Recent Posts</h3>
+                <h3 className="font-semibold font-[family-name:var(--font-shippori)]">Recent Posts</h3>
                 <Link href="/posts" className="text-sm text-accent hover:underline">
                   View all
                 </Link>
@@ -132,7 +132,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="col-span-12 lg:col-span-4 border bg-card p-4">
-              <h3 className="font-semibold mb-4 font-[family-name:var(--font-playfair)]">Quick Stats</h3>
+              <h3 className="font-semibold mb-4 font-[family-name:var(--font-shippori)]">Quick Stats</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">This week</span>

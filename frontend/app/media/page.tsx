@@ -136,7 +136,7 @@ export default function MediaPage() {
       </header>
       <main className="flex-1 p-6 overflow-auto">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold font-[family-name:var(--font-playfair)]">Media Library</h2>
+          <h2 className="text-2xl font-bold font-[family-name:var(--font-shippori)]">Media Library</h2>
           <p className="text-muted-foreground">{media.length} files</p>
           {uploadError && (
             <div className="mt-2 p-3 bg-destructive/10 text-destructive text-sm">

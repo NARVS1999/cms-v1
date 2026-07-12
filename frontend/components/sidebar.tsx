@@ -19,13 +19,16 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
       <div className="p-6 border-b border-sidebar-border">
-        <div className="border-t-2 border-accent pt-4">
-          <h1 className="text-xl font-bold tracking-[0.15em] uppercase font-[family-name:var(--font-playfair)]">
-            CMS
-          </h1>
-          <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mt-1">
-            Admin Panel
-          </p>
+        <div className="border-t-2 border-accent pt-4 flex items-center gap-3">
+          <span className="hanko shrink-0">印</span>
+          <div>
+            <h1 className="text-xl font-bold tracking-[0.15em] uppercase font-[family-name:var(--font-shippori)]">
+              CMS
+            </h1>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mt-1">
+              Admin Panel
+            </p>
+          </div>
         </div>
       </div>
       <nav className="flex-1 p-4 space-y-1">

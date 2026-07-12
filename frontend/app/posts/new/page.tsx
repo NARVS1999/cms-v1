@@ -143,7 +143,7 @@ export default function NewPostPage() {
               placeholder="Post title"
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
-              className="w-full text-2xl font-bold border-none outline-none bg-transparent font-[family-name:var(--font-playfair)]"
+              className="w-full text-2xl font-bold border-none outline-none bg-transparent font-[family-name:var(--font-shippori)]"
             />
           </div>
           <div className="flex items-center gap-1 p-2 border-b bg-muted/30">
@@ -196,7 +196,7 @@ export default function NewPostPage() {
           </div>
           <textarea
             ref={textareaRef}
-            className="flex-1 p-4 outline-none resize-none font-[family-name:var(--font-newsreader)]"
+            className="flex-1 p-4 outline-none resize-none font-[family-name:var(--font-noto-serif)]"
             placeholder="Write your post content here..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -214,7 +214,7 @@ export default function NewPostPage() {
               </div>
               <div className="flex-1 p-6 overflow-auto">
                 <article className="prose max-w-none">
-                  <h1 className="text-3xl font-bold mb-4 font-[family-name:var(--font-playfair)]">
+                  <h1 className="text-3xl font-bold mb-4 font-[family-name:var(--font-shippori)]">
                     {title || 'Post Title'}
                   </h1>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6">

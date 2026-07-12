@@ -61,7 +61,7 @@ export default function BlogPostPage() {
 
       <main className="max-w-3xl mx-auto px-6 py-10">
         <article>
-          <h1 className="text-4xl font-bold leading-tight font-[family-name:var(--font-playfair)]">
+          <h1 className="text-4xl font-bold leading-tight font-[family-name:var(--font-shippori)]">
             {post.title}
           </h1>
 
@@ -95,13 +95,13 @@ export default function BlogPostPage() {
           )}
 
           <div
-            className="mt-8 prose prose-lg max-w-none font-[family-name:var(--font-newsreader)]"
+            className="mt-8 prose prose-lg max-w-none font-[family-name:var(--font-noto-serif)]"
             dangerouslySetInnerHTML={{ __html: post.content || '' }}
           />
         </article>
       </main>
 
-      <footer className="border-t mt-20">
+      <footer className="newspaper-rule mt-20">
         <div className="max-w-3xl mx-auto px-6 py-8 text-center text-xs tracking-wider uppercase text-muted-foreground">
           Powered by CMS
         </div>

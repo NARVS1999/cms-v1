@@ -39,7 +39,7 @@ export default function LoginPage() {
       {/* Masthead */}
       <div className="text-center mb-10">
         <div className="border-t-2 border-accent inline-block pt-4 mb-4">
-          <h1 className="text-4xl font-bold tracking-[0.15em] uppercase font-[family-name:var(--font-playfair)]">
+          <h1 className="text-4xl font-bold tracking-[0.15em] uppercase font-[family-name:var(--font-shippori)]">
             CMS
           </h1>
         </div>
@@ -51,7 +51,7 @@ export default function LoginPage() {
       {/* Login Card */}
       <div className="w-full max-w-sm">
         <div className="border border-border bg-card p-8">
-          <h2 className="text-lg font-semibold mb-6 font-[family-name:var(--font-playfair)]">
+          <h2 className="text-lg font-semibold mb-6 font-[family-name:var(--font-shippori)]">
             Sign In
           </h2>
 

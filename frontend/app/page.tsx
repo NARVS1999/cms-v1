@@ -30,9 +30,11 @@ export default function Home() {
         <div className="max-w-3xl mx-auto px-6 pt-4 flex justify-end">
           <ThemeToggle />
         </div>
-        <div className="max-w-3xl mx-auto px-6 py-12 text-center">
-          <div className="border-t-2 border-accent inline-block pt-4 mb-2">
-            <h1 className="text-5xl font-bold tracking-[0.2em] uppercase font-[family-name:var(--font-playfair)]">
+        <div className="max-w-3xl mx-auto px-6 py-12 text-center relative">
+          <div className="border-t-2 border-accent inline-block pt-4 mb-2 relative">
+            <span className="hanko absolute -left-12 top-1/2 -translate-y-1/2 max-sm:hidden">印</span>
+            <span className="vertical-accent absolute -right-12 top-1/2 -translate-y-1/2 text-xs text-muted-foreground opacity-60 max-sm:hidden">第壹號</span>
+            <h1 className="text-5xl font-bold tracking-[0.2em] uppercase font-[family-name:var(--font-shippori)]">
               The Blog
             </h1>
           </div>
@@ -67,7 +69,7 @@ export default function Home() {
                         />
                       </div>
                     )}
-                    <h2 className="text-2xl font-bold group-hover:text-accent transition-colors font-[family-name:var(--font-playfair)]">
+                    <h2 className="text-2xl font-bold group-hover:text-accent transition-colors font-[family-name:var(--font-shippori)]">
                       {post.title}
                     </h2>
                     <div className="flex items-center gap-3 mt-2 text-xs tracking-wider uppercase text-muted-foreground">
@@ -87,12 +89,12 @@ export default function Home() {
                         </>
                       )}
                     </div>
-                    <p className="mt-3 text-muted-foreground line-clamp-2 font-[family-name:var(--font-newsreader)]">
+                    <p className="mt-3 text-muted-foreground line-clamp-2 font-[family-name:var(--font-noto-serif)]">
                       {post.preview || post.content?.replace(/<[^>]+>/g, '').slice(0, 180) || ''}
                       {(post.preview?.length ?? 0) >= 180 ? '...' : ''}
                     </p>
                   </Link>
-                  {index < posts.length - 1 && <div className="border-t" />}
+                  {index < posts.length - 1 && <div className="border-t border-double" />}
                 </article>
               ))}
             </div>
@@ -124,7 +126,7 @@ export default function Home() {
         )}
       </main>
 
-      <footer className="border-t mt-20">
+      <footer className="newspaper-rule mt-20">
         <div className="max-w-3xl mx-auto px-6 py-8 text-center text-xs tracking-wider uppercase text-muted-foreground">
           Powered by CMS
         </div>
